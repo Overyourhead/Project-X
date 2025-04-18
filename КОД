@@ -1,0 +1,111 @@
+class Sha3_512Dict:
+    __values: list
+    __keys: list
+    
+    def __init__(self):
+        self.__values = []
+        self.__keys = []
+    
+    def my_hash(self, x):
+        return int(hashlib.sha3_512(str(x).encode()).hexdigest(), 16)
+    
+    def __getitem__(self, key):
+        for i, my_key in enumerate(self.__keys):
+            if self.my_hash(my_key) == self.my_hash(key):
+                return self.__values[i]
+        raise ValueError("Key not found.")
+    
+    def __setitem__(self, key, value):
+        for i, my_key in enumerate(self.__keys):
+            if self.my_hash(my_key) == self.my_hash(key):
+                self.__values[i] = value
+                return
+        self.__keys.append(key)
+        self.__values.append(value)
+    
+    def __delitem__(self, key):
+        for i, my_key in enumerate(self.__keys):
+            if self.my_hash(my_key) == self.my_hash(key):
+                del self.__keys[i]
+                del self.__values[i]
+                return
+        raise ValueError("Key not found.")
+    
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except ValueError:
+            return default
+    
+    def keys(self):
+        return self.__keys.copy()
+    
+    def values(self):
+        return self.__values.copy()
+    
+    def items(self):
+        return list(zip(self.__keys.copy(), self.__values.copy()))
+    
+    def clear(self):
+        self.__keys.clear()
+        self.__values.clear()
+    
+    def copy(self):
+        new_dict = Sha3_512Dict()
+        new_dict.__keys = self.__keys.copy()
+        new_dict.__values = self.__values.copy()
+        return new_dict
+    
+    @classmethod
+    def fromkeys(cls, seq, value=None):
+        new_dict = cls()
+        for key in seq:
+            new_dict[key] = value
+        return new_dict
+    
+    def pop(self, key, default=None):
+        try:
+            value = self[key]
+            del self[key]
+            return value
+        except ValueError:
+            if default is not None:
+                return default
+            raise
+    
+    def popitem(self):
+        if not self.__keys:
+            raise KeyError("Dictionary is empty")
+        key = self.__keys[-1]
+        value = self.__values[-1]
+        del self.__keys[-1]
+        del self.__values[-1]
+        return (key, value)
+    
+    def setdefault(self, key, default=None):
+        try:
+            return self[key]
+        except ValueError:
+            self[key] = default
+            return default
+    
+    def update(self, other=None, **kwargs):
+        if other is not None:
+            if hasattr(other, "items"):
+                for k, v in other.items():
+                    self[k] = v
+            else:
+                for k, v in other:
+                    self[k] = v
+        for k, v in kwargs.items():
+            self[k] = v
+
+# Пример использования 
+my_dict = Sha3_512Dict()
+my_dict['apple'] = 1
+my_dict['banana'] = 2
+print(my_dict.get('apple'))  
+print(my_dict.keys())        
+print(my_dict['banana'])    
+del my_dict['apple']
+print(my_dict.keys())    
